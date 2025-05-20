@@ -10,7 +10,7 @@ load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-ADMIN_ID = 123456789  # Buni o'zingizning Telegram ID'ingiz bilan almashtiring
+ADMIN_ID = 7581985528  # Buni o'zingizning Telegram ID'ingiz bilan almashtiring
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 USERS_FILE = "users.json"
