@@ -4,7 +4,6 @@ import telebot
 import requests
 from dotenv import load_dotenv
 
-# .env fayldan tokenlarni yuklab olamiz
 load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -13,7 +12,6 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 USERS_FILE = "users.json"
 
-# Foydalanuvchini saqlash
 def save_user(user_id, name):
     if not os.path.exists(USERS_FILE):
         with open(USERS_FILE, "w") as f:
@@ -25,7 +23,6 @@ def save_user(user_id, name):
         with open(USERS_FILE, "w") as f:
             json.dump(data, f, indent=2)
 
-# Ismni olish (saqlangan bo‘lsa)
 def get_username(user_id):
     if not os.path.exists(USERS_FILE):
         return "Do‘st"
@@ -33,7 +30,6 @@ def get_username(user_id):
         data = json.load(f)
     return data.get(str(user_id), {}).get("name", "Do‘st")
 
-# GPT javobini olish
 def ask_gpt(prompt):
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
@@ -46,10 +42,10 @@ def ask_gpt(prompt):
             {
                 "role": "system",
                 "content": (
-                    "Sen faqat maktab o‘qituvchilari uchun yordam beruvchi GPT modelsan. "
-                    "Dars ishlanma, test, amaliy mashg‘ulot, informatika bo‘yicha metodik ko‘rsatmalar, "
-                    "va O‘zbekiston ta’lim tizimiga oid qonun-qoidalarga asoslangan javoblar berasan. "
-                    "Til: o‘zbekcha. Uslub: rasmiy, tushunarli, o‘qituvchiga mos."
+                    "Sen maktab informatika o‘qituvchilari uchun yordam beruvchi GPT assistentsan. "
+                    "Dars ishlanma, test savollar, IT mashg‘ulotlar, metodik ko‘rsatmalar, va O‘zbekiston ta’lim tizimidagi qonun-qoidalarga oid savollarga javob berasan. "
+                    "Javoblarni o‘zbek tilida yoz. Foydalanuvchi ismini hech qachon yozma. "
+                    "'Azamat', 'javob:', 'Hurmatli foydalanuvchi' degan iboralarsiz, mavzuga bevosita javob ber."
                 )
             },
             {"role": "user", "content": prompt}
@@ -66,15 +62,13 @@ def ask_gpt(prompt):
     except Exception as e:
         return f"GPT bilan bog‘lanishda xatolik: {e}"
 
-# /start komandasi
 @bot.message_handler(commands=['start'])
 def welcome(message):
     user_id = message.from_user.id
     name = message.from_user.first_name
     save_user(user_id, name)
-    bot.reply_to(message, f"Salom, {name}! Men ustozlar uchun sun’iy intellekt botman. Menga yozing.")
+    bot.reply_to(message, f"Salom, {name}! Men ustozlar uchun sun’iy intellekt botman. Menga yozing, yordam beraman!")
 
-# Xabarni qayta ishlash
 @bot.message_handler(func=lambda m: True)
 def handle_message(message):
     user_id = message.from_user.id
@@ -83,7 +77,6 @@ def handle_message(message):
 
     bot.send_chat_action(message.chat.id, 'typing')
 
-    # Faqat salomlashganda ism bilan javob berish
     if prompt in ["salom", "assalomu alaykum", "hi", "hello"]:
         javob = f"Salom, {name}!"
     else:
@@ -91,7 +84,6 @@ def handle_message(message):
 
     bot.reply_to(message, javob)
 
-# Botni ishga tushurish
 print("Bot ishga tushdi...")
 
 while True:
