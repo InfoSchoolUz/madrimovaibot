@@ -1,4 +1,3 @@
-
 import os
 import json
 import telebot
@@ -10,7 +9,7 @@ load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-ADMIN_ID = 7581985528  # Buni o'zingizning Telegram ID'ingiz bilan almashtiring
+ADMIN_ID = 7581985528
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 USERS_FILE = "users.json"
@@ -30,13 +29,6 @@ def save_user(user_id, name):
     with open(USERS_FILE, "w") as f:
         json.dump(data, f, indent=2)
 
-def get_username(user_id):
-    if not os.path.exists(USERS_FILE):
-        return "DoвЂst"
-    with open(USERS_FILE, "r") as f:
-        data = json.load(f)
-    return data.get(str(user_id), {}).get("name", "DoвЂst")
-
 def ask_gpt(prompt):
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
@@ -49,10 +41,9 @@ def ask_gpt(prompt):
             {
                 "role": "system",
                 "content": (
-                    "Sen maktab informatika oвЂqituvchilari uchun yordam beruvchi GPT assistentsan. "
-                    "Dars ishlanma, test savollar, IT mashgвЂulotlar, metodik koвЂrsatmalar, va OвЂzbekiston taвЂ™lim tizimidagi qonun-qoidalarga oid savollarga javob berasan. "
-                    "Javoblarni oвЂzbek tilida yoz. Foydalanuvchi ismini hech qachon yozma. "
-                    "'Azamat', 'javob:', 'Hurmatli foydalanuvchi' degan iboralarsiz, mavzuga bevosita javob ber."
+                    "Sen maktab informatika o‘qituvchilari uchun yordam beruvchi GPT assistentsan. "
+                    "Dars ishlanma, test savollar, IT mashg‘ulotlar, metodik ko‘rsatmalar, va O‘zbekiston ta’lim tizimidagi qonun-qoidalarga oid savollarga javob berasan. "
+                    "Javoblarni o‘zbek tilida yoz. Foydalanuvchi ismini yoki 'javob:' degan iboralarni yozma. To‘g‘ridan-to‘g‘ri mavzuga kir."
                 )
             },
             {"role": "user", "content": prompt}
@@ -67,32 +58,31 @@ def ask_gpt(prompt):
         else:
             return f"[{response.status_code}] GPT javob bermadi."
     except Exception as e:
-        return f"GPT bilan bogвЂlanishda xatolik: {e}"
+        return f"GPT bilan bog‘lanishda xatolik: {e}"
 
 @bot.message_handler(commands=['start'])
 def welcome(message):
     user_id = message.from_user.id
     name = message.from_user.first_name
     save_user(user_id, name)
-    bot.reply_to(message, f"Salom, {name}! Men ustozlar uchun sunвЂ™iy intellekt botman. Menga yozing, yordam beraman!")
+    bot.reply_to(message, f"Salom, {name}! Men ustozlar uchun sun’iy intellekt botman. Menga yozing, yordam beraman!")
 
 @bot.message_handler(commands=['stat'])
 def show_stats(message):
     if message.from_user.id != ADMIN_ID:
-        bot.reply_to(message, "Kechirasiz, bu buyruq faqat admin uchun.")
+        bot.reply_to(message, "Bu buyruq faqat admin uchun.")
         return
 
-    if not os.path.exists(USERS_FILE):
+    if not os.path.exists("users.json"):
         bot.reply_to(message, "Statistika mavjud emas.")
         return
 
-    with open(USERS_FILE, 'r') as f:
+    with open("users.json", 'r') as f:
         data = json.load(f)
 
-    total_users = len(data)
-    text = f"Botdan foydalanuvchilar soni: {total_users} ta\n\n"
+    text = f"Bot foydalanuvchilari: {len(data)} ta\n\n"
     for uid, info in data.items():
-        text += f"{info['name']} вЂ” oxirgi kirish: {info['last_seen']}\n"
+        text += f"ID: {uid}\nIsm: {info['name']}\nOxirgi kirish: {info['last_seen']}\n\n"
 
     bot.reply_to(message, text)
 
