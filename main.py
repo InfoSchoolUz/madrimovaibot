@@ -1,3 +1,4 @@
+
 import os
 import json
 import telebot
@@ -9,7 +10,7 @@ load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-ADMIN_ID = 7581985528
+ADMIN_ID = 7581985528  # Faqat siz admin
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 USERS_FILE = "users.json"
@@ -41,9 +42,14 @@ def ask_gpt(prompt):
             {
                 "role": "system",
                 "content": (
-                    "Sen maktab informatika o‘qituvchilari uchun yordam beruvchi GPT assistentsan. "
-                    "Dars ishlanma, test savollar, IT mashg‘ulotlar, metodik ko‘rsatmalar, va O‘zbekiston ta’lim tizimidagi qonun-qoidalarga oid savollarga javob berasan. "
-                    "Javoblarni o‘zbek tilida yoz. Foydalanuvchi ismini yoki 'javob:' degan iboralarni yozma. To‘g‘ridan-to‘g‘ri mavzuga kir."
+                    "Sen OвЂzbekiston taвЂ™lim tizimidagi ustozlarga yordam beruvchi GPT sunвЂ™iy intellekt modelsan. "
+                    "Foydalanuvchilar umumiy oвЂrta taвЂ™lim maktablarida faoliyat yurituvchi oвЂqituvchilardir. "
+                    "Ular senga har qanday fan вЂ” matematika, fizika, kimyo, informatika, biologiya, adabiyot, tarix, ingliz tili va boshqa fanlar boвЂyicha savollar berishadi. "
+                    "Savollar dars ishlanma, test savollar, metodik tavsiyalar, taвЂ™limiy qonunlar, amaliy mashgвЂulotlar, elektron resurslar yoki mustaqil ishlar boвЂyicha boвЂlishi mumkin. "
+                    "Javoblaringni faqat oвЂzbek tilida yoz. Uslubing rasmiy, tushunarli, qisqa va aniq boвЂlishi zarur. "
+                    "Hech qachon foydalanuvchi ismini, 'Salom', 'javob:', yoki 'men sizga shuni aytaman' kabi iboralarni yozma. "
+                    "'Assalomu alaykum' iborasi faqat nutq yoki rasmiy murojaat soвЂralgandagina ishlatiladi. "
+                    "Javobni mavzuga bevosita kirib boshlagin. Har doim oвЂqituvchi savol berayotganini unutma."
                 )
             },
             {"role": "user", "content": prompt}
@@ -55,29 +61,31 @@ def ask_gpt(prompt):
         response = requests.post(url, headers=headers, json=data, timeout=20)
         if response.status_code == 200:
             return response.json()["choices"][0]["message"]["content"]
+        elif response.status_code == 401:
+            return "вќ— API kalit notoвЂgвЂri yoki ishlamayapti. Iltimos, tekshiring."
         else:
             return f"[{response.status_code}] GPT javob bermadi."
     except Exception as e:
-        return f"GPT bilan bog‘lanishda xatolik: {e}"
+        return f"GPT bilan bogвЂlanishda xatolik: {e}"
 
 @bot.message_handler(commands=['start'])
 def welcome(message):
     user_id = message.from_user.id
     name = message.from_user.first_name
     save_user(user_id, name)
-    bot.reply_to(message, f"Salom, {name}! Men ustozlar uchun sun’iy intellekt botman. Menga yozing, yordam beraman!")
+    bot.reply_to(message, f"Assalomu alaykum, {name}! Men ustozlar uchun sunвЂ™iy intellekt botman. Menga yozing, yordam beraman.")
 
 @bot.message_handler(commands=['stat'])
 def show_stats(message):
     if message.from_user.id != ADMIN_ID:
-        bot.reply_to(message, "Bu buyruq faqat admin uchun.")
+        bot.reply_to(message, "Bunday buyruq mavjud emas.")
         return
 
-    if not os.path.exists("users.json"):
-        bot.reply_to(message, "Statistika mavjud emas.")
+    if not os.path.exists(USERS_FILE):
+        bot.reply_to(message, "Hozircha foydalanuvchilar roвЂyxati yoвЂq.")
         return
 
-    with open("users.json", 'r') as f:
+    with open(USERS_FILE, 'r') as f:
         data = json.load(f)
 
     text = f"Bot foydalanuvchilari: {len(data)} ta\n\n"
@@ -90,16 +98,12 @@ def show_stats(message):
 def handle_message(message):
     user_id = message.from_user.id
     name = message.from_user.first_name
-    prompt = message.text.strip().lower()
+    prompt = message.text.strip()
 
     save_user(user_id, name)
     bot.send_chat_action(message.chat.id, 'typing')
 
-    if prompt in ["salom", "assalomu alaykum", "hi", "hello"]:
-        javob = f"Salom, {name}!"
-    else:
-        javob = ask_gpt(message.text)
-
+    javob = ask_gpt(prompt)
     bot.reply_to(message, javob)
 
 print("Bot ishga tushdi...")
