@@ -13,25 +13,21 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 # Telegram bot
 bot = telebot.TeleBot(TOKEN)
 
-# /start buyrug'iga javob
 @bot.message_handler(commands=['start'])
 def welcome(message):
     name = message.from_user.first_name
     text = f"Assalomu alaykum, {name}! Men ustozlar uchun sun’iy intellekt botman. Menga yozing, yordam beraman."
     bot.send_message(message.chat.id, text)
 
-# Har qanday xabarga javob
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
     user_input = message.text
-
     try:
         javob = get_ai_response(user_input)
         bot.send_message(message.chat.id, javob)
     except Exception as e:
         bot.send_message(message.chat.id, f"Xatolik yuz berdi: {e}")
 
-# OpenRouter orqali AI javobi olish funksiyasi
 def get_ai_response(prompt):
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
@@ -39,7 +35,7 @@ def get_ai_response(prompt):
         "Content-Type": "application/json"
     }
     data = {
-        "model": "openrouter/openai/gpt-3.5-turbo",  # Modelni hohlaganingizga almashtiring
+        "model": "openrouter/openai/gpt-3.5-turbo",
         "messages": [
             {"role": "system", "content": "Sen ustozlarga yordam beradigan intellektual yordamchisan."},
             {"role": "user", "content": prompt}
@@ -49,7 +45,6 @@ def get_ai_response(prompt):
     }
 
     response = requests.post(url, headers=headers, json=data)
-
     try:
         result = response.json()
         if "choices" in result and len(result["choices"]) > 0:
@@ -61,6 +56,5 @@ def get_ai_response(prompt):
     except Exception as e:
         return f"JSON xatosi: {e}"
 
-# Botni ishga tushiramiz
 print("Bot ishga tushdi...")
 bot.infinity_polling()
