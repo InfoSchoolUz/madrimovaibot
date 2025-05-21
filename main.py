@@ -38,13 +38,13 @@ def get_ai_response(prompt):
         "Content-Type": "application/json"
     }
     data = {
-        "model": "openai/gpt-3.5-turbo",  # TO‘G‘RI model ID
+        "model": "mistralai/mistral-7b-instruct",  # BEPUL API uchun eng ishonchli model
         "messages": [
             {"role": "system", "content": "Sen ustozlarga yordam beradigan intellektual yordamchisan."},
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.7,
-        "max_tokens": 1000
+        "max_tokens": 500  # Cheklovlarga mos
     }
 
     response = requests.post(url, headers=headers, json=data)
@@ -61,5 +61,5 @@ def get_ai_response(prompt):
 
 # Botni ishga tushurish
 print("Bot ishga tushdi...")
-bot.remove_webhook()  # Har qanday webhook/polling sessiyasini tozalash
-bot.infinity_polling(threaded=False)  # Threadingni o‘chirib, 409 xatoni oldini olamiz
+bot.remove_webhook()
+bot.infinity_polling(threaded=False)
