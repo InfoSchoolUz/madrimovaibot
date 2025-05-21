@@ -1,18 +1,17 @@
 import telebot
 from dotenv import load_dotenv
 import os
-import openai
+import requests
 
 # .env faylini yuklaymiz
 load_dotenv()
 
 # Tokenlar
 TOKEN = os.getenv("BOT_TOKEN")
-API_KEY = os.getenv("OPENAI_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-# Telegram va OpenAI botlar
+# Telegram bot
 bot = telebot.TeleBot(TOKEN)
-openai.api_key = API_KEY
 
 # /start buyrug'iga javob
 @bot.message_handler(commands=['start'])
@@ -32,18 +31,27 @@ def handle_message(message):
     except Exception as e:
         bot.send_message(message.chat.id, f"Xatolik yuz berdi: {e}")
 
-# OpenAI orqali javob olish funksiyasi
+# OpenRouter orqali javob olish funksiyasi
 def get_ai_response(prompt):
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",  # yoki boshqa model
-        messages=[
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": "openrouter/openai/gpt-3.5-turbo",  # boshqa model ham tanlasa bo'ladi
+        "messages": [
             {"role": "system", "content": "Sen ustozlarga yordam beradigan intellektual yordamchisan."},
             {"role": "user", "content": prompt}
         ],
-        max_tokens=1000,
-        temperature=0.7,
-    )
-    return response['choices'][0]['message']['content'].strip()
+        "temperature": 0.7,
+        "max_tokens": 1000
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+    result = response.json()
+    
+    return result['choices'][0]['message']['content'].strip()
 
 # Botni ishga tushiramiz
 print("Bot ishga tushdi...")
