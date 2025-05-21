@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import os
 import requests
 
-# .env faylini yuklaymiz
+# .env faylini yuklash
 load_dotenv()
 
 # Tokenlar
@@ -13,7 +13,7 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 # Telegram bot
 bot = telebot.TeleBot(TOKEN)
 
-# /start buyrug'iga javob
+# /start buyrug'i
 @bot.message_handler(commands=['start'])
 def welcome(message):
     name = message.from_user.first_name
@@ -30,7 +30,7 @@ def handle_message(message):
     except Exception as e:
         bot.send_message(message.chat.id, f"Xatolik yuz berdi: {e}")
 
-# OpenRouter orqali AI javobi olish funksiyasi
+# OpenRouter orqali AI javobi olish
 def get_ai_response(prompt):
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
@@ -38,7 +38,7 @@ def get_ai_response(prompt):
         "Content-Type": "application/json"
     }
     data = {
-        "model": "openrouter/openai/gpt-3.5-turbo",  # Modelni istalganiga almashtirishingiz mumkin
+        "model": "openai/gpt-3.5-turbo",  # TO‘G‘RI model ID
         "messages": [
             {"role": "system", "content": "Sen ustozlarga yordam beradigan intellektual yordamchisan."},
             {"role": "user", "content": prompt}
@@ -59,7 +59,7 @@ def get_ai_response(prompt):
     except Exception as e:
         return f"JSON xatosi: {e}"
 
-# Botni ishga tushiramiz
+# Botni ishga tushurish
 print("Bot ishga tushdi...")
-bot.remove_webhook()  # Har qanday eski sessiyani tozalash
-bot.infinity_polling()
+bot.remove_webhook()  # Har qanday webhook/polling sessiyasini tozalash
+bot.infinity_polling(threaded=False)  # Threadingni o‘chirib, 409 xatoni oldini olamiz
