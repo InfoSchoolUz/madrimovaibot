@@ -31,7 +31,7 @@ def handle_message(message):
     except Exception as e:
         bot.send_message(message.chat.id, f"Xatolik yuz berdi: {e}")
 
-# OpenRouter orqali javob olish funksiyasi
+# OpenRouter orqali AI javobi olish funksiyasi
 def get_ai_response(prompt):
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
@@ -39,7 +39,7 @@ def get_ai_response(prompt):
         "Content-Type": "application/json"
     }
     data = {
-        "model": "openrouter/openai/gpt-3.5-turbo",  # boshqa model ham tanlasa bo'ladi
+        "model": "openrouter/openai/gpt-3.5-turbo",  # Modelni hohlaganingizga almashtiring
         "messages": [
             {"role": "system", "content": "Sen ustozlarga yordam beradigan intellektual yordamchisan."},
             {"role": "user", "content": prompt}
@@ -49,9 +49,17 @@ def get_ai_response(prompt):
     }
 
     response = requests.post(url, headers=headers, json=data)
-    result = response.json()
-    
-    return result['choices'][0]['message']['content'].strip()
+
+    try:
+        result = response.json()
+        if "choices" in result and len(result["choices"]) > 0:
+            return result["choices"][0]["message"]["content"].strip()
+        elif "error" in result:
+            return f"OpenRouter xatosi: {result['error'].get('message', 'Nomaʼlum xato')}"
+        else:
+            return "Xatolik: AI javobi olinmadi."
+    except Exception as e:
+        return f"JSON xatosi: {e}"
 
 # Botni ishga tushiramiz
 print("Bot ishga tushdi...")
