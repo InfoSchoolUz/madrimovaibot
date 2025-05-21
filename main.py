@@ -13,14 +13,12 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 # Telegram bot
 bot = telebot.TeleBot(TOKEN)
 
-# /start buyrug'i
 @bot.message_handler(commands=['start'])
 def welcome(message):
     name = message.from_user.first_name
     text = f"Assalomu alaykum, {name}! Men ustozlar uchun sun’iy intellekt botman. Menga yozing, yordam beraman."
     bot.send_message(message.chat.id, text)
 
-# Har qanday xabarga javob
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
     user_input = message.text
@@ -30,7 +28,6 @@ def handle_message(message):
     except Exception as e:
         bot.send_message(message.chat.id, f"Xatolik yuz berdi: {e}")
 
-# OpenRouter orqali AI javobi olish
 def get_ai_response(prompt):
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
@@ -38,13 +35,13 @@ def get_ai_response(prompt):
         "Content-Type": "application/json"
     }
     data = {
-        "model": "mistralai/mistral-7b-instruct",  # BEPUL API uchun eng ishonchli model
+        "model": "mistralai/mistral-7b-instruct",
         "messages": [
             {"role": "system", "content": "Sen ustozlarga yordam beradigan intellektual yordamchisan."},
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.7,
-        "max_tokens": 500  # Cheklovlarga mos
+        "max_tokens": 500
     }
 
     response = requests.post(url, headers=headers, json=data)
@@ -59,7 +56,6 @@ def get_ai_response(prompt):
     except Exception as e:
         return f"JSON xatosi: {e}"
 
-# Botni ishga tushurish
 print("Bot ishga tushdi...")
 bot.remove_webhook()
 bot.infinity_polling(threaded=False)
